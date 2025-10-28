@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>阅界图书馆 - 在这里，遇见另一个世界</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<style>
+    body {
+        background: linear-gradient(135deg, #1a237e 0%, #006064 100%);
+        color: #f5f5f5;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>阅界图书馆</h1>
+            <h3>在这里，遇见另一个世界。</h3>
+        </header>
+
+        <div class="nav-container">
+            <div class="nav-item active">
+                <a href="/">
+                    <i class="fas fa-home"></i>
+                    <span>首页</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="ranking.html">
+                    <i class="fas fa-chart-line"></i>
+                    <span>阅读量排名</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="library.html">
+                    <i class="fas fa-book"></i>
+                    <span>数字资源</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="problem.html">
+                    <i class="fas fa-question-circle"></i>
+                    <span>问题反馈</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="personality.html">
+                    <i class="fas fa-user"></i>
+                    <span>个人主页</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="ranking-container">
+            <div class="ranking-header">
+                <h2><i class="fas fa-trophy"></i> 阅读时长排行榜</h2>
+                <p>看看谁是阅界最勤奋的读者</p>
+            </div>
+
+            <div id="message" class="message"></div>
+
+            <div class="ranking-list" id="rankingList">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> 加载中...
+                </div>
+            </div>
+        </div>
+
+        <div class="quote">
+            "读书破万卷，下笔如有神。 —— 杜甫"
+        </div>
+    </div>
+
+</body>
+
+<script>
+    let currentUser = null;
+
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        checkLoginStatus();
+    });
+
+    // 检查是否登录
+    async function checkLoginStatus() {
+        try {
+            const response = await fetch('/api/whoami');
+            const data = await response.json();
+
+            if (data.success && data.user) {
+                currentUser = data.user;
+                loadRankingData();
+            } else {
+                showMessage('请登录后查看排行榜', 'error');
+                document.getElementById('rankingList').innerHTML = `
+                <div class="no-data">
+                    <i class="fas fa-exclamation-triangle"></i><br>
+                    请先登录以查看排行榜
+                </div>
+            `;
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            }
+        } catch (error) {
+            console.error('检查登录状态失败:', error);
+            showMessage('网络错误，请稍后重试', 'error');
+        }
+    }
+
+    // 加载排行榜数据
+    async function loadRankingData() {
+        try {
+            const response = await fetch('/api/ranking/reading-time');
+            const data = await response.json();
+
+            if (data.success) {
+                displayRanking(data.data);
+            } else {
+                showMessage('加载排行榜失败', 'error');
+            }
+        } catch (error) {
+            console.error('加载排行榜失败:', error);
+            showMessage('加载排行榜失败', 'error');
+        }
+    }
+
+    // 显示排行榜
+    function displayRanking(rankingData) {
+        const rankingList = document.getElementById('rankingList');
+
+        if (!rankingData || rankingData.length === 0) {
+            rankingList.innerHTML = `
+            <div class="no-data">
+                <i class="fas fa-book-open"></i><br>
+                暂无阅读数据
+            </div>
+        `;
+            return;
+        }
+
+        let html = '';
+        rankingData.forEach(user => {
+            const isCurrentUser = currentUser && user.username === currentUser.username;
+            const rankClass = user.rank <= 3 ? `rank-${user.rank}` : 'rank-other';
+            const itemClass = isCurrentUser ? 'ranking-item my-rank' : 'ranking-item';
+
+            // 格式化阅读时间
+            const hours = Math.floor(user.readingTime / 60);
+            const minutes = user.readingTime % 60;
+            const timeDisplay = hours > 0 ?
+                `${hours}小时${minutes}分钟` :
+                `${minutes}分钟`;
+
+            html += `
+            <div class="${itemClass}">
+                <div class="rank-number ${rankClass}">
+                    ${user.rank}
+                </div>
+                <div class="user-info">
+                    <div class="username">
+                        ${user.username}
+                        ${isCurrentUser ? '<i class="fas fa-user" style="margin-left: 8px; color: #4fc3f7;"></i>' : ''}
+                    </div>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <i class="fas fa-book"></i>
+                            已读 ${user.booksRead} 本书
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-clock"></i>
+                            最后活跃: ${formatDate(user.lastActive)}
+                        </div>
+                    </div>
+                </div>
+                <div class="reading-time">
+                    ${timeDisplay}
+                </div>
+            </div>
+        `;
+        });
+
+        rankingList.innerHTML = html;
+    }
+
+    // 格式化日期
+    function formatDate(dateString) {
+        if (!dateString) return '未知';
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now - date);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 1) return '今天';
+        if (diffDays === 2) return '昨天';
+        if (diffDays <= 7) return `${diffDays - 1}天前`;
+
+        return date.toLocaleDateString('zh-CN');
+    }
+
+    function showMessage(text, type) {
+        const message = document.getElementById('message');
+        message.textContent = text;
+        message.className = 'message ' + type;
+        message.style.display = 'block';
+
+        setTimeout(() => {
+            message.style.display = 'none';
+        }, 3000);
+    }
+</script>
+
+</html>

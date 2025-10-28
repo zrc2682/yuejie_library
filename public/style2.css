@@ -1,0 +1,275 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #1a237e 0%, #006064 100%);
+    color: #f5f5f5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.login-container,
+.register-container {
+    width: 100%;
+    max-width: 500px;
+    background: rgba(30, 40, 60, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 40px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-header,
+.register-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-header h1,
+.register-header h1 {
+    color: #4fc3f7;
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.login-header p,
+.register-header p {
+    color: #80deea;
+    font-size: 1.2rem;
+}
+
+.login-form,
+.register-form {
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #b3e5fc;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #4fc3f7;
+    box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+
+/* 用户图标样式 */
+
+.form-group .fa-user {
+    position: absolute;
+    right: 15px;
+    top: 42px;
+    color: #b3e5fc;
+    font-size: 18px;
+}
+
+
+/* 锁图标样式 */
+
+.form-group .fa-lock {
+    position: absolute;
+    right: 15px;
+    top: 42px;
+    color: #b3e5fc;
+    font-size: 18px;
+}
+
+
+/* 邮箱图标样式 */
+
+.form-group .fa-envelope {
+    position: absolute;
+    right: 15px;
+    top: 42px;
+    color: #b3e5fc;
+    font-size: 18px;
+}
+
+
+/* 验证图标样式 */
+
+.form-group .fa-check-circle {
+    position: absolute;
+    right: 15px;
+    top: 42px;
+    color: #b3e5fc;
+    font-size: 18px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(45deg, #0288d1, #00bcd4);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4);
+}
+
+.submit-btn:hover {
+    background: linear-gradient(45deg, #039be5, #00acc1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 188, 212, 0.6);
+}
+
+.register-link,
+.login-link {
+    text-align: center;
+    margin-top: 25px;
+    color: #b3e5fc;
+}
+
+.register-link a,
+.login-link a {
+    color: #4fc3f7;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.register-link a:hover,
+.login-link a:hover {
+    color: #80deea;
+    text-decoration: underline;
+}
+
+.divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(179, 229, 252, 0.3), transparent);
+    margin: 30px 0;
+}
+
+.message {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    display: none;
+}
+
+.message.success {
+    background-color: rgba(46, 125, 50, 0.3);
+    border: 1px solid rgba(76, 175, 80, 0.5);
+    color: #a5d6a7;
+}
+
+.message.error {
+    background-color: rgba(183, 28, 28, 0.3);
+    border: 1px solid rgba(244, 67, 54, 0.5);
+    color: #ef9a9a;
+}
+
+.quote {
+    text-align: center;
+    font-style: italic;
+    color: #b3e5fc;
+    margin-top: 30px;
+    font-size: 1.1rem;
+    opacity: 0.8;
+}
+
+.password-match {
+    font-size: 0.9rem;
+    margin-top: 5px;
+    display: none;
+}
+
+.password-match.valid {
+    color: #a5d6a7;
+    display: block;
+}
+
+.password-match.invalid {
+    color: #ef9a9a;
+    display: block;
+}
+
+@media (max-width: 600px) {
+    .login-container {
+        padding: 30px 20px;
+    }
+    .login-header h1 {
+        font-size: 2rem;
+    }
+    .login-header p {
+        font-size: 1rem;
+    }
+}
+
+
+/* 基本样式保持不变，只添加了密码强度指示器 */
+
+.password-strength {
+    height: 5px;
+    margin-top: 5px;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.strength-weak {
+    background-color: #ff4757;
+    width: 33%;
+}
+
+.strength-medium {
+    background-color: #ffa502;
+    width: 66%;
+}
+
+.strength-strong {
+    background-color: #2ed573;
+    width: 100%;
+}
+
+.password-hint {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}

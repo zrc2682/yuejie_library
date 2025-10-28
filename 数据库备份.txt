@@ -1,0 +1,277 @@
+const mysql = require('mysql2/promise');
+
+async function initializeDatabase() {
+    let connection;
+    try {
+        // 第一次连接用于创建数据库
+        const adminConnection = await mysql.createConnection({
+            host: 'localhost',
+            user: 'root',
+            password: 'woaizhb99' // 请替换为你的密码
+        });
+
+        await adminConnection.execute(`CREATE DATABASE IF NOT EXISTS yuejie_library`);
+        console.log('✅ 数据库创建成功');
+        await adminConnection.end();
+
+        // 第二次连接直接连接到目标数据库
+        connection = await mysql.createConnection({
+            host: 'localhost',
+            user: 'root',
+            password: 'woaizhb99',
+            database: 'yuejie_library'
+        });
+
+        // 创建books表
+        await connection.execute(`CREATE TABLE IF NOT EXISTS books (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            author VARCHAR(255) NOT NULL,
+            isbn VARCHAR(20),
+            cover_image VARCHAR(500),
+            categories JSON,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+        console.log('✅ 图书表创建成功');
+
+        // 创建users表
+        await connection.execute(`CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(50) NOT NULL UNIQUE,
+            email VARCHAR(100) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            role ENUM('user', 'admin') DEFAULT 'user',
+            books_read INT DEFAULT 0,
+            reading_time INT DEFAULT 0,
+            reading_preferences TEXT,
+            last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`);
+        console.log('✅ 用户表创建成功');
+
+        // 创建feedback表
+        await connection.execute(`CREATE TABLE IF NOT EXISTS feedback (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            email VARCHAR(100) NOT NULL,
+            issue_type VARCHAR(50) NOT NULL,
+            subject VARCHAR(255) NOT NULL,
+            description TEXT NOT NULL,
+            status ENUM('new', 'in_progress', 'resolved') DEFAULT 'new',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )`);
+        console.log('✅ 反馈表创建成功');
+
+        // 创建阅读历史表
+        await connection.execute(`CREATE TABLE IF NOT EXISTS reading_history (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            book_id INT NOT NULL,
+            start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            end_date TIMESTAMP NULL,
+            reading_time INT DEFAULT 0 COMMENT '阅读时长(分钟)',
+            status ENUM('reading', 'completed', 'paused') DEFAULT 'reading',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+            INDEX idx_user_id (user_id),
+            INDEX idx_book_id (book_id)
+        )`);
+        console.log('✅ 阅读历史表创建成功');
+
+        // 创建用户书架表
+        await connection.execute(`CREATE TABLE IF NOT EXISTS user_bookshelf (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            book_id INT NOT NULL,
+            added_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            shelf_type ENUM('want_to_read', 'reading', 'read') DEFAULT 'want_to_read',
+            rating TINYINT DEFAULT 0 COMMENT '评分 1-5',
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+            UNIQUE KEY unique_user_book (user_id, book_id),
+            INDEX idx_user_id (user_id)
+        )`);
+        console.log('✅ 用户书架表创建成功');
+
+        // 创建当前阅读表
+        await connection.execute(`CREATE TABLE IF NOT EXISTS current_reading (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            book_id INT NOT NULL,
+            current_page INT DEFAULT 0,
+            total_pages INT DEFAULT 0,
+            start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_read TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            reading_session_time INT DEFAULT 0 COMMENT '本次阅读时长(分钟)',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE,
+            UNIQUE KEY unique_user_current (user_id),
+            INDEX idx_user_id (user_id)
+        )`);
+        console.log('✅ 当前阅读表创建成功');
+
+        // 插入图书数据
+        const booksData = [
+            {
+                title: "百年孤独",
+                author: "加西亚·马尔克斯",
+                isbn: "9787544253994",
+                cover_image: "/photo/百年孤独.jpg",
+                categories: JSON.stringify(["文学小说", "中文图书", "获奖作品"])
+            },
+            {
+                title: "时间简史",
+                author: "史蒂芬·霍金",
+                isbn: "9787535732309",
+                cover_image: "/photo/时间简史.jpg",
+                categories: JSON.stringify(["自然科学", "英文原版", "现代出版物"])
+            },
+            {
+                title: "设计心理学",
+                author: "唐纳德·诺曼",
+                isbn: "9787121284554",
+                cover_image: "/photo/设计心理学.jpg",
+                categories: JSON.stringify(["艺术设计", "社会科学", "英文原版"])
+            },
+            {
+                title: "人类简史",
+                author: "尤瓦尔·赫拉利",
+                isbn: "9787508647357",
+                cover_image: "/photo/人类简史.jpg",
+                categories: JSON.stringify(["历史地理", "社会科学", "最新上架"])
+            },
+            {
+                title: "国富论",
+                author: "亚当·斯密",
+                isbn: "9787100152653",
+                cover_image: "/photo/国富论.jpg",
+                categories: JSON.stringify(["经济管理", "哲学宗教", "古籍文献"])
+            },
+            {
+                title: "小王子",
+                author: "安托万·德·圣-埃克苏佩里",
+                isbn: "9787020042494",
+                cover_image: "/photo/小王子.jpg",
+                categories: JSON.stringify(["儿童文学", "法语图书", "获奖作品"])
+            },
+            {
+                title: "三体",
+                author: "刘慈欣",
+                isbn: "9787536692930",
+                cover_image: "/photo/三体.jpg",
+                categories: JSON.stringify(["文学小说", "中文图书", "获奖作品"])
+            },
+            {
+                title: "算法导论",
+                author: "托马斯·科曼",
+                isbn: "9787111407010",
+                cover_image: "/photo/算法导论.jpg",
+                categories: JSON.stringify(["工程技术", "英文原版", "现代出版物"])
+            }
+        ];
+
+        // 清空并重新插入图书数据
+        await connection.execute('DELETE FROM books');
+        for (const book of booksData) {
+            await connection.execute(
+                `INSERT INTO books (title, author, isbn, cover_image, categories) 
+                 VALUES (?, ?, ?, ?, ?)`, 
+                [book.title, book.author, book.isbn, book.cover_image, book.categories]
+            );
+        }
+        console.log('✅ 图书数据插入成功');
+
+        // 创建默认管理员用户 (密码: admin123)
+        const crypto = require('crypto');
+        const hashedPassword = crypto.createHash('md5').update('admin123').digest('hex');
+        
+        await connection.execute(`
+            INSERT INTO users (username, email, password, role, books_read, reading_time, reading_preferences) 
+            VALUES ('admin', 'admin@yuejie.com', ?, 'admin', 2, 640, '科幻,文学,科普')
+            ON DUPLICATE KEY UPDATE 
+            password = VALUES(password),
+            role = VALUES(role),
+            books_read = VALUES(books_read),
+            reading_time = VALUES(reading_time),
+            reading_preferences = VALUES(reading_preferences)
+        `, [hashedPassword]);
+        console.log('✅ 管理员用户创建成功');
+
+        // 获取用户ID和图书ID用于插入关联数据
+        const [adminUser] = await connection.execute('SELECT id FROM users WHERE username = "admin"');
+        const [books] = await connection.execute('SELECT id, title FROM books');
+        
+        const adminId = adminUser[0].id;
+        const bookMap = {};
+        books.forEach(book => {
+            bookMap[book.title] = book.id;
+        });
+
+        // 清空并插入阅读历史数据
+        await connection.execute('DELETE FROM reading_history WHERE user_id = ?', [adminId]);
+        const readingHistoryData = [
+            { bookTitle: "百年孤独", start: '2024-01-15 10:00:00', end: '2024-01-20 15:30:00', time: 360, status: 'completed' },
+            { bookTitle: "时间简史", start: '2024-02-01 14:00:00', end: '2024-02-10 11:20:00', time: 280, status: 'completed' },
+            { bookTitle: "三体", start: '2024-03-05 09:30:00', end: null, time: 180, status: 'reading' },
+            { bookTitle: "小王子", start: '2024-03-10 16:45:00', end: null, time: 90, status: 'paused' }
+        ];
+
+        for (const history of readingHistoryData) {
+            await connection.execute(
+                `INSERT INTO reading_history (user_id, book_id, start_date, end_date, reading_time, status) 
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [adminId, bookMap[history.bookTitle], history.start, history.end, history.time, history.status]
+            );
+        }
+        console.log('✅ 阅读历史数据插入成功');
+
+        // 清空并插入用户书架数据
+        await connection.execute('DELETE FROM user_bookshelf WHERE user_id = ?', [adminId]);
+        const bookshelfData = [
+            { bookTitle: "百年孤独", shelfType: 'read', rating: 5, notes: '非常震撼的魔幻现实主义作品' },
+            { bookTitle: "时间简史", shelfType: 'read', rating: 4, notes: '科普经典，理解宇宙的入门读物' },
+            { bookTitle: "三体", shelfType: 'reading', rating: 0, notes: '正在阅读，科幻构思很独特' },
+            { bookTitle: "小王子", shelfType: 'want_to_read', rating: 0, notes: '准备阅读的经典童话' },
+            { bookTitle: "人类简史", shelfType: 'want_to_read', rating: 0, notes: '对人类历史的宏观视角' },
+            { bookTitle: "设计心理学", shelfType: 'want_to_read', rating: 0, notes: '学习设计思维' }
+        ];
+
+        for (const shelf of bookshelfData) {
+            await connection.execute(
+                `INSERT INTO user_bookshelf (user_id, book_id, shelf_type, rating, notes) 
+                 VALUES (?, ?, ?, ?, ?)`,
+                [adminId, bookMap[shelf.bookTitle], shelf.shelfType, shelf.rating, shelf.notes]
+            );
+        }
+        console.log('✅ 用户书架数据插入成功');
+
+        // 清空并插入当前阅读数据
+        await connection.execute('DELETE FROM current_reading WHERE user_id = ?', [adminId]);
+        await connection.execute(
+            `INSERT INTO current_reading (user_id, book_id, current_page, total_pages, start_date) 
+             VALUES (?, ?, ?, ?, ?)`,
+            [adminId, bookMap["三体"], 195, 300, '2024-03-05 09:30:00']
+        );
+        console.log('✅ 当前阅读数据插入成功');
+
+        console.log('🎉 数据库初始化完成！');
+        console.log('📝 管理员账号: admin / admin123');
+
+    } catch (error) {
+        console.error('❌ 数据库初始化失败:', error);
+    } finally {
+        if (connection) {
+            await connection.end();
+        }
+    }
+}
+
+// 执行初始化函数
+initializeDatabase();

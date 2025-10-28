@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阅界图书馆 - 个人主页</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<style>
+    body {
+        background: linear-gradient(135deg, #1a237e 0%, #006064 100%);
+        color: #f5f5f5;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>阅界图书馆</h1>
+            <h3>在这里，遇见另一个世界。</h3>
+        </header>
+
+        <div class="nav-container">
+            <div class="nav-item active">
+                <a href="/">
+                    <i class="fas fa-home"></i>
+                    <span>首页</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="ranking.html">
+                    <i class="fas fa-chart-line"></i>
+                    <span>阅读量排名</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="library.html">
+                    <i class="fas fa-book"></i>
+                    <span>数字资源</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="problem.html">
+                    <i class="fas fa-question-circle"></i>
+                    <span>问题反馈</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="personality.html">
+                    <i class="fas fa-user"></i>
+                    <span>个人主页</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="profile-container">
+            <!--侧边-->
+            <div class="profile-sidebar">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="profile-info">
+                        <h2 id="userName">0</h2>
+                        <p id="userEmail">0</p>
+                        <p id="userRole">0</p>
+                    </div>
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <div class="stat-value" id="booksRead">0</div>
+                        <div class="stat-label">已读书籍</div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-value" id="readingTime">0</div>
+                        <div class="stat-label">阅读时长</div>
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">阅读偏好</div>
+                    <div class="info-value" id="readingPreferences">0</div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-label">最近活跃</div>
+                    <div class="info-value" id="lastActive">0</div>
+                </div>
+                <div class="message" id="message"></div>
+
+                <button class="btn btn-edit" id="editProfileBtn">编辑个人信息</button>
+                <button class="btn btn-logout" id="logoutBtn">退出登录</button>
+
+                <div class="edit-form" id="editProfileForm">
+                    <div class="form-group">
+                        <label for="editUserName">用户名</label>
+                        <input type="text" id="editUserName">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editUserEmail">邮箱</label>
+                        <input type="email" id="editUserEmail">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editReadingPreferences">阅读偏好</label>
+                        <input type="text" id="editReadingPreferences">
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn" id="saveProfileBtn">保存</button>
+                        <button class="btn" id="cancelEditBtn">取消</button>
+                    </div>
+                </div>
+
+                <!-- 管理员按钮区域 -->
+                <div class="admin-controls" id="adminControls" style="display:none; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(179, 229, 252, 0.3);">
+                    <h4 style="color: #4fc3f7; margin-bottom: 15px; text-align: center;">管理员功能</h4>
+                    <button class="btn" id="userListBtn" style="width: 100%; margin-bottom: 10px;">
+                        <i class="fas fa-users"></i> 用户管理
+                    </button>
+                    <button class="refreshbtn" onclick="loadUserList()" style="width: 100%;" id="refresh-userlist">
+                        <i class="fas fa-sync-alt"></i> 刷新用户列表
+                    </button>
+                    <button class="btn" id="feedbackListBtn" style="width: 100%; margin-bottom: 10px;">
+                            <i class="fas fa-users"></i> 反馈列表
+                    </button>
+                    <button class="refreshbtn" onclick="loadFeedbackList()" style="width: 100%;" id="refresh-feedbacklist">
+                            <i class="fas fa-sync-alt"></i> 刷新反馈列表
+                    </button>
+                </div>
+            </div>
+
+            <!--主内容-->
+            <div class="profile-main">
+                <!-- 用户列表区域 - 放在主内容区顶部 -->
+                <div class="admin-section" id="userListSection" style="display: none;">
+                    <h3 class="section-title">用户管理</h3>
+                    <div class="user-list-container">
+                        <div class="user-list" id="userList">
+                            <!--js动态添加用户列表-->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 反馈列表区域 - 放在用户列表下方 -->
+                <div class="admin-section" id="feedbackListSection" style="display: none;">
+                    <h3 class="section-title">反馈处理</h3>
+                    <div class="feedback-list-container">
+                        <div class="feedback-list" id="feedbackList">
+                            <!--js动态添加反馈列表-->
+                        </div>
+                    </div>
+                </div>
+
+                <!--当前阅读-->
+                <div class="profile-card">
+                    <h3 class="section-title">当前阅读</h3>
+                    <div class="current-reading-grid" id="currentReading">
+                        <!-- 由JS动态生成 -->
+                    </div>
+                </div>
+                <!--阅读历史-->
+                <div class="profile-card">
+                    <h3 class="section-title">阅读历史</h3>
+                    <div class="book-grid" id="readingHistory"></div>
+                    <!--由js加入-->
+                </div>
+                <!--我的书架-->
+                <div class="profile-card">
+                    <h3 class="section-title">我的书架</h3>
+                    <div class="book-grid" id="myBookshelf"></div>
+                    <!--由js加入-->
+                </div>
+            </div>
+        </div>
+
+        <div class="quote">
+            "书籍是屹立在时间的汪洋大海中的灯塔。 —— 惠普尔"
+        </div>
+    </div>
+
+    <!-- 右键菜单 -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item delete" id="contextMenuDelete">
+            <i class="fas fa-trash"></i>
+            <span>删除</span>
+        </div>
+    </div>
+
+    <!-- 提示消息容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 删除确认模态框 -->
+    <div class="delete-modal" id="deleteModal">
+        <div class="delete-modal-content">
+            <h3>确认删除</h3>
+            <p id="deleteModalText">您确定要删除这本书吗？</p>
+            <div class="delete-modal-actions">
+                <button class="delete-confirm-btn" id="confirmDeleteBtn">确认删除</button>
+                <button class="delete-cancel-btn" id="cancelDeleteBtn">取消</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    // 用户数据
+    let userProfile = {
+        username: '',
+        email: '',
+        role: '',
+        booksRead: 0,
+        readingTime: 0,
+        readingPreferences: '暂无偏好',
+    };
+
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        checkLoginStatus();
+        initEventListeners();
+    });
+
+    // 检查登录状态
+    async function checkLoginStatus() {
+        try {
+            const response = await fetch('/api/whoami');
+            const data = await response.json();
+
+            if (data.success && data.user) {
+                // 用户已登录，加载用户数据
+                await loadUserData(data.user);
+            } else {
+                // 用户未登录，跳转到登录页
+                showMessage('请先登录', 'error');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            }
+        } catch (error) {
+            console.error('检查登录状态失败:', error);
+            showMessage('网络错误，请稍后重试', 'error');
+        }
+    }
+
+    // 加载用户数据
+    async function loadUserData(user) {
+        try {
+            // 获取完整的用户数据
+            const response = await fetch('/api/user/profile-data');
+            const data = await response.json();
+
+            if (data.success) {
+                // 设置用户信息
+                userProfile.username = data.data.user.username;
+                userProfile.email = data.data.user.email;
+                userProfile.role = data.data.user.role;
+                userProfile.booksRead = data.data.user.booksRead;
+                userProfile.readingTime = data.data.user.readingTime;
+                userProfile.readingPreferences = data.data.user.readingPreferences;
+
+                // 更新界面
+                updateUserInterface();
+
+                // 如果是管理员，显示用户管理按钮
+                if (userProfile.role === 'admin') {
+                    document.getElementById('adminControls').style.display = 'block';
+                }
+
+                // 加载其他数据
+                loadCurrentReading(data.data.currentReading);
+                loadReadingHistory(data.data.readingHistory);
+                loadMyBookshelf(data.data.myBookshelf);
+            } else {
+                showMessage('获取用户数据失败', 'error');
+            }
+
+        } catch (error) {
+            console.error('加载用户数据失败:', error);
+            showMessage('加载用户数据失败', 'error');
+        }
+    }
+
+    // 初始化事件监听器
+    function initEventListeners() {
+        // 编辑个人信息按钮
+        document.getElementById('editProfileBtn').addEventListener('click', function() {
+            showEditForm();
+        });
+
+        // 保存个人信息按钮
+        document.getElementById('saveProfileBtn').addEventListener('click', function() {
+            saveProfile();
+        });
+
+        // 取消编辑按钮
+        document.getElementById('cancelEditBtn').addEventListener('click', function() {
+            hideEditForm();
+        });
+
+        // 退出登录按钮
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            logout();
+        });
+
+        //用户列表按钮
+        document.getElementById('userListBtn').addEventListener('click', function() {
+            toggleUserList();
+        });
+
+        //反馈列表按钮
+        document.getElementById('feedbackListBtn').addEventListener("click", function() {
+            toggleFeedbackList();
+        });
+
+        // 右键菜单事件
+        document.addEventListener('contextmenu', handleContextMenu);
+        document.addEventListener('click', handleContextMenuClose);
+        document.getElementById('contextMenuDelete').addEventListener('click', handleContextMenuDelete);
+
+        // 删除确认按钮
+        document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+        document.getElementById('cancelDeleteBtn').addEventListener('click', cancelDelete);
+
+        // 点击模态框背景关闭
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cancelDelete();
+            }
+        });
+    }
+
+    // 切换用户列表显示
+    function toggleUserList() {
+        const userListSection = document.getElementById('userListSection');
+        if (userListSection.style.display === 'none') {
+            userListSection.style.display = 'block';
+            loadUserList();
+        } else {
+            userListSection.style.display = 'none';
+        }
+    }
+
+    //切换反馈列表显示
+    function toggleFeedbackList() {
+        const feedbackListSection = document.getElementById('feedbackListSection');
+        if (feedbackListSection.style.display === 'none') {
+            feedbackListSection.style.display = 'block';
+            loadFeedbackList();
+        } else {
+            feedbackListSection.style.display === 'none';
+        }
+    }
+
+    // 更新用户界面
+    function updateUserInterface() {
+        // 更新基本信息
+        document.getElementById('userName').textContent = userProfile.username;
+        document.getElementById('userEmail').textContent = userProfile.email;
+        document.getElementById('userRole').textContent = userProfile.role;
+
+        // 更新统计数据
+        document.getElementById('booksRead').textContent = userProfile.booksRead;
+        document.getElementById('readingPreferences').textContent = userProfile.readingPreferences;
+
+        const readingTimeElement = document.getElementById('readingTime');
+        if (readingTimeElement) {
+            // 将分钟转换为小时显示
+            const hours = Math.floor(userProfile.readingTime / 60);
+            readingTimeElement.textContent = hours + 'h';
+        }
+
+        // 更新最近活跃时间
+        const lastActiveElement = document.getElementById('lastActive');
+        if (lastActiveElement) {
+            lastActiveElement.textContent = '刚刚';
+        }
+    }
+
+    // 显示编辑表单
+    function showEditForm() {
+        document.getElementById('editUserName').value = userProfile.username;
+        document.getElementById('editUserEmail').value = userProfile.email;
+        document.getElementById('editReadingPreferences').value = userProfile.readingPreferences;
+
+        document.getElementById('editProfileForm').style.display = 'block';
+        document.getElementById('editProfileBtn').style.display = 'none';
+    }
+
+    // 隐藏编辑表单
+    function hideEditForm() {
+        document.getElementById('editProfileForm').style.display = 'none';
+        document.getElementById('editProfileBtn').style.display = 'block';
+    }
+
+    // 保存个人资料
+    async function saveProfile() {
+        try {
+            const formData = {
+                username: document.getElementById('editUserName').value,
+                email: document.getElementById('editUserEmail').value,
+                readingPreferences: document.getElementById('editReadingPreferences').value
+            };
+
+            // 基本验证
+            if (!formData.username || !formData.email) {
+                showMessage('用户名和邮箱是必填的', 'error');
+                return;
+            }
+
+            const response = await fetch('/api/user/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // 更新本地数据
+                userProfile.username = formData.username;
+                userProfile.email = formData.email;
+                userProfile.readingPreferences = formData.readingPreferences;
+
+                // 更新界面
+                updateUserInterface();
+
+                showMessage('个人资料更新成功', 'success');
+                hideEditForm();
+            } else {
+                // 处理各种错误情况
+                showMessage(data.message || '更新失败', 'error');
+            }
+        } catch (error) {
+            console.error('保存个人资料失败:', error);
+            showMessage('网络错误，请稍后重试', 'error');
+        }
+    }
+
+    // 退出登录
+    async function logout() {
+        try {
+            const response = await fetch('/api/logout', {
+                method: 'POST'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showMessage('退出登录成功', 'success');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1000);
+            } else {
+                showMessage('退出登录失败', 'error');
+            }
+        } catch (error) {
+            console.error('退出登录失败:', error);
+            showMessage('退出登录失败', 'error');
+        }
+    }
+
+    //管理员选项--显示用户列表
+    async function loadUserList() {
+        try {
+            const userListSection = document.getElementById('userListSection');
+            userListSection.style.display = 'block';
+
+            const response = await fetch('/api/admin/users');
+            const data = await response.json();
+
+            if (data.success) {
+                displayUserList(data.data);
+            } else {
+                showMessage('加载用户列表失败', 'error');
+            }
+
+        } catch (error) {
+            console.error('加载用户列表失败', error);
+            showMessage('加载用户列表失败', 'error');
+        }
+    }
+
+    function displayUserList(users) {
+        const userListElement = document.getElementById('userList');
+
+        if (!users || users.length === 0) {
+            userListElement.innerHTML = '<div class="no-data" style="text-align:center;color:#b3e5fc;padding:40px;font-style:italic;">暂无用户数据</div>';
+            return;
+        }
+
+        userListElement.innerHTML = `
+            <div class="user-table-header">
+                <div>ID</div>
+                <div>name</div>
+                <div>email</div>
+                <div>role</div>
+                <div>register time</div>
+            </div>
+            ${users.map(user => `
+                <div class="user-table-row" data-user-id="${user.id}">
+                    <div>${user.id}</div>
+                    <div>${user.username}</div>
+                    <div>${user.email}</div>
+                    <div>
+                        <span class="role-badge ${user.role}">
+                            ${user.role === 'admin' ? '管理员' : '普通用户'}
+                        </span>
+                    </div>
+                    <div>${new Date(user.created_at).toLocaleDateString()}</div>
+                    <div>
+                        <button class="btn-small" onclick="changeUserRole(${user.id}, '${user.role}')">
+                            <i class="fas fa-user-cog"></i> 修改角色
+                        </button>
+                    </div>
+                </div>
+            `).join('')}
+        `;
+    }
+
+    async function changeUserRole(userId, currentRole){
+        const newRole = currentRole === 'admin' ? 'user' : 'admin';
+        const confirmMessage = `确定要将用户角色从"${currentRole === 'admin' ? '管理员' : '普通用户'}"改为"${newRole === 'admin' ? '管理员' : '普通用户'}"吗？`;
+    
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        try{
+            const response = await fetch(`/api/admin/users/${userId}/role`, {
+                method: 'PUT',
+                headers:{
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ role: newRole})
+            });
+
+            const data = await response.json();
+
+            if(data.success){
+                showMessage('用户角色修改成功');
+                // 刷新用户列表
+                loadUserList();
+            }else{
+                throw new Error(data.message || '修改角色失败');
+            }
+
+        }catch (error) {
+            console.error('修改用户角色失败:', error);
+            showMessage('修改用户角色失败', 'error');
+        }
+    }
+
+    //管理员选项-查看反馈列表
+    async function loadFeedbackList(){
+        try{
+            const feedbackListSection = document.getElementById('feedbackListSection');
+            feedbackListSection.style.display = 'block';
+
+            const response = await fetch('/api/admin/feedback');
+            const data = await response.json();
+
+            if(data.success){
+                displayFeedbackList(data.data);
+            }
+            else{
+                showMessage('获取反馈列表失败');
+            }
+
+        }catch(error){
+            console.error('加载反馈列表失败:', error);
+            showMessage('加载反馈列表失败', 'error');
+        }
+    }
+
+    function displayFeedbackList(feedbacks){
+        const feedbackListElement = document.getElementById('feedbackList');
+
+        if (!feedbacks || feedbacks.length === 0) {
+            feedbackListElement.innerHTML = '<div class="no-data" style="text-align:center;color:#b3e5fc;padding:40px;font-style:italic;">暂无反馈数据</div>';
+            return;
+        }
+
+        feedbackListElement.innerHTML =  `
+            <div class="feedback-table-header">
+                <div>ID</div>
+                <div>问题类型</div>
+                <div>主题</div>
+                <div>状态</div>
+                <div>提交时间</div>
+                <div>操作</div>
+            </div>
+            ${feedbacks.map(feedback => `
+                <div class="feedback-table-row" data-feedback-id="${feedback.id}">
+                    <div class="feedback-id">${feedback.id}</div>
+                    <div class="feedback-type">${getIssueTypeText(feedback.issue_type)}</div>
+                    <div class="feedback-subject" >${feedback.subject.length > 25 ? feedback.subject.substring(0, 25) + '...' : feedback.subject}</div>
+                    <div class="feedback-status">
+                        <span class="status-badge ${feedback.status}">
+                            ${getStatusText(feedback.status)}
+                        </span>
+                    </div>
+                    <div class="feedback-date">${new Date(feedback.created_at).toLocaleDateString()}</div>
+                    <div class="feedback-actions">
+                        <button class="btn-small view-btn" onclick="viewFeedbackDetails(${feedback.id})" title="查看详情">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-small status-btn" onclick="updateFeedbackStatus(${feedback.id}, '${feedback.status}')" title="更新状态">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('')}
+        `;
+    }
+
+    // 获取问题类型文本
+    function getIssueTypeText(issueType) {
+        const typeMap = {
+            'technical': '技术',
+            'content': '内容',
+            'suggestion': '建议',
+            'bug': '错误',
+            'other': '其他'
+        };
+        return typeMap[issueType] || issueType;
+    }
+
+
+    // 获取状态文本
+    function getStatusText(status) {
+        const statusMap = {
+            'new': '新反馈',
+            'in_progress': '处理中',
+            'resolved': '已解决',
+            'closed': '已关闭'
+        };
+        return statusMap[status] || status;
+    }
+
+    // 查看反馈详情
+    async function viewFeedbackDetails(feedbackId) {
+        try {
+            // 从现有的反馈列表中获取数据，或者重新请求单个反馈的详细信息
+            const response = await fetch('/api/admin/feedback');
+            const data = await response.json();
+            
+            if (data.success) {
+                const feedback = data.data.find(f => f.id == feedbackId);
+                if (feedback) {
+                    showFeedbackModal(feedback);
+                } else {
+                    showToast('error', '错误', '未找到该反馈信息');
+                }
+            } else {
+                throw new Error(data.message || '获取反馈数据失败');
+            }
+        } catch (error) {
+            console.error('获取反馈详情失败:', error);
+            showToast('error', '错误', '获取反馈详情失败');
+        }
+    }
+
+    // 显示反馈详情模态框
+    function showFeedbackModal(feedback) {
+        // 创建模态框
+        const modal = document.createElement('div');
+        modal.className = 'feedback-modal active';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1002;
+            backdrop-filter: blur(5px);
+        `;
+        
+        // 状态文本映射
+        const statusTexts = {
+            'new': '新反馈',
+            'in_progress': '处理中',
+            'resolved': '已解决',
+            'closed': '已关闭'
+        };
+        
+        // 问题类型文本映射
+        const issueTypeTexts = {
+            'technical': '技术问题',
+            'content': '内容问题',
+            'suggestion': '功能建议',
+            'bug': '错误报告',
+            'other': '其他问题'
+        };
+        
+        modal.innerHTML = `
+            <div class="feedback-modal-content" style="
+                background: rgba(30, 40, 60, 0.95);
+                border-radius: 16px;
+                padding: 30px;
+                max-width: 600px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(10px);
+            ">
+                <div class="feedback-modal-header" style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 25px;
+                    padding-bottom: 15px;
+                    border-bottom: 2px solid rgba(79, 195, 247, 0.3);
+                ">
+                    <h3 style="color: #4fc3f7; margin: 0; font-size: 1.5rem;">
+                        <i class="fas fa-comment-dots"></i> 反馈详情
+                    </h3>
+                    <button class="close-modal" style="
+                        background: none;
+                        border: none;
+                        color: #b3e5fc;
+                        font-size: 1.5rem;
+                        cursor: pointer;
+                        padding: 5px;
+                        border-radius: 5px;
+                        transition: all 0.3s ease;
+                    ">&times;</button>
+                </div>
+                
+                <div class="feedback-details" style="color: #e3f2fd;">
+                    <!-- 基本信息 -->
+                    <div class="detail-section" style="margin-bottom: 25px;">
+                        <h4 style="color: #80deea; margin-bottom: 15px; font-size: 1.1rem;">
+                            <i class="fas fa-info-circle"></i> 基本信息
+                        </h4>
+                        <div class="detail-grid" style="
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 15px;
+                        ">
+                            <div class="detail-item">
+                                <label style="color: #b3e5fc; font-weight: bold; display: block; margin-bottom: 5px;">反馈ID</label>
+                                <div style="background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px;">#${feedback.id}</div>
+                            </div>
+                            <div class="detail-item">
+                                <label style="color: #b3e5fc; font-weight: bold; display: block; margin-bottom: 5px;">提交时间</label>
+                                <div style="background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px;">${new Date(feedback.created_at).toLocaleString()}</div>
+                            </div>
+                            <div class="detail-item">
+                                <label style="color: #b3e5fc; font-weight: bold; display: block; margin-bottom: 5px;">状态</label>
+                                <div class="status-badge ${feedback.status}" style="padding: 6px 12px; border-radius: 15px; font-size: 0.8rem; font-weight: bold; text-align: center;">
+                                    ${statusTexts[feedback.status] || feedback.status}
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <label style="color: #b3e5fc; font-weight: bold; display: block; margin-bottom: 5px;">问题类型</label>
+                                <div style="background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px;">${issueTypeTexts[feedback.issue_type] || feedback.issue_type}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 用户信息 -->
+                    <div class="detail-section" style="margin-bottom: 25px;">
+                        <h4 style="color: #80deea; margin-bottom: 15px; font-size: 1.1rem;">
+                            <i class="fas fa-user"></i> 用户信息
+                        </h4>
+                        <div class="detail-grid" style="
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 15px;
+                        ">
+                            <div class="detail-item">
+                                <label style="color: #b3e5fc; font-weight: bold; display: block; margin-bottom: 5px;">姓名</label>
+                                <div style="background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px;">${feedback.name}</div>
+                            </div>
+                            <div class="detail-item">
+                                <label style="color: #b3e5fc; font-weight: bold; display: block; margin-bottom: 5px;">邮箱</label>
+                                <div style="background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px;">
+                                    <a href="mailto:${feedback.email}" style="color: #4fc3f7; text-decoration: none;">${feedback.email}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 反馈内容 -->
+                    <div class="detail-section" style="margin-bottom: 25px;">
+                        <h4 style="color: #80deea; margin-bottom: 15px; font-size: 1.1rem;">
+                            <i class="fas fa-file-alt"></i> 反馈内容
+                        </h4>
+                        <div class="detail-item">
+                            <label style="color: #b3e5fc; font-weight: bold; display: block; margin-bottom: 5px;">主题</label>
+                            <div style="background: rgba(255,255,255,0.1); padding: 12px 15px; border-radius: 8px; font-size: 1.1rem; font-weight: bold; color: #4fc3f7;">
+                                ${feedback.subject}
+                            </div>
+                        </div>
+                        <div class="detail-item" style="margin-top: 15px;">
+                            <label style="color: #b3e5fc; font-weight: bold; display: block; margin-bottom: 5px;">详细描述</label>
+                            <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; line-height: 1.6; min-height: 100px; white-space: pre-wrap;">
+                                ${feedback.description}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 更新时间 -->
+                    ${feedback.updated_at && feedback.updated_at !== feedback.created_at ? `
+                    <div class="detail-section">
+                        <div class="detail-item">
+                            <label style="color: #b3e5fc; font-weight: bold; display: block; margin-bottom: 5px;">最后更新</label>
+                            <div style="background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px; color: #b3e5fc;">
+                                ${new Date(feedback.updated_at).toLocaleString()}
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="modal-actions" style="
+                    margin-top: 25px;
+                    padding-top: 20px;
+                    border-top: 1px solid rgba(179, 229, 252, 0.3);
+                    display: flex;
+                    gap: 10px;
+                    justify-content: flex-end;
+                ">
+                    <button class="btn-small" onclick="updateFeedbackStatus(${feedback.id}, '${feedback.status}')" style="
+                        padding: 10px 20px;
+                        background: linear-gradient(135deg, rgba(79, 195, 247, 0.2), rgba(128, 222, 234, 0.2));
+                        border: 1px solid rgba(79, 195, 247, 0.3);
+                        border-radius: 8px;
+                        color: #4fc3f7;
+                        cursor: pointer;
+                        font-size: 0.9rem;
+                        transition: all 0.3s ease;
+                    ">
+                        <i class="fas fa-edit"></i> 更新状态
+                    </button>
+                    <button class="btn-small close-modal" style="
+                        padding: 10px 20px;
+                        background: rgba(255, 255, 255, 0.1);
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        border-radius: 8px;
+                        color: #b3e5fc;
+                        cursor: pointer;
+                        font-size: 0.9rem;
+                        transition: all 0.3s ease;
+                    ">
+                        <i class="fas fa-times"></i> 关闭
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // 添加到页面
+        document.body.appendChild(modal);
+        
+        // 添加关闭事件
+        const closeButtons = modal.querySelectorAll('.close-modal');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modal.remove();
+            });
+        });
+        
+        // 点击背景关闭
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+        
+        // ESC键关闭
+        const handleEscKey = (e) => {
+            if (e.key === 'Escape') {
+                modal.remove();
+                document.removeEventListener('keydown', handleEscKey);
+            }
+        };
+        document.addEventListener('keydown', handleEscKey);
+    }
+
+    // 更新反馈状态
+    async function updateFeedbackStatus(feedbackId, currentStatus) {
+        const statusOptions = {
+            'new': ['in_progress', 'resolved', 'closed'],
+            'in_progress': ['resolved', 'closed', 'new'],
+            'resolved': ['closed', 'in_progress'],
+            'closed': ['new', 'in_progress']
+        };
+        
+        const availableStatuses = statusOptions[currentStatus] || ['new', 'in_progress', 'resolved', 'closed'];
+        
+        const statusTexts = {
+            'new': '新反馈',
+            'in_progress': '处理中',
+            'resolved': '已解决',
+            'closed': '已关闭'
+        };
+        
+        // 创建状态选择模态框
+        const modal = document.createElement('div');
+        modal.className = 'status-modal active';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1003;
+            backdrop-filter: blur(3px);
+        `;
+        
+        modal.innerHTML = `
+            <div class="status-modal-content" style="
+                background: rgba(30, 40, 60, 0.95);
+                border-radius: 12px;
+                padding: 25px;
+                width: 320px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(10px);
+            ">
+                <div class="status-modal-header" style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                    padding-bottom: 15px;
+                    border-bottom: 1px solid rgba(79, 195, 247, 0.3);
+                ">
+                    <h4 style="color: #4fc3f7; margin: 0; font-size: 1.1rem;">
+                        <i class="fas fa-edit"></i> 更新反馈状态
+                    </h4>
+                    <button class="close-status-modal" style="
+                        background: none;
+                        border: none;
+                        color: #b3e5fc;
+                        font-size: 1.2rem;
+                        cursor: pointer;
+                        padding: 5px;
+                        border-radius: 5px;
+                        transition: all 0.3s ease;
+                    ">&times;</button>
+                </div>
+                
+                <div class="status-current" style="
+                    margin-bottom: 20px;
+                    padding: 10px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 8px;
+                    text-align: center;
+                ">
+                    <div style="color: #b3e5fc; font-size: 0.9rem; margin-bottom: 5px;">当前状态</div>
+                    <span class="status-badge ${currentStatus}" style="font-size: 0.9rem;">
+                        ${statusTexts[currentStatus]}
+                    </span>
+                </div>
+                
+                <div class="status-options" style="margin-bottom: 25px;">
+                    <div style="color: #b3e5fc; font-size: 0.9rem; margin-bottom: 12px; text-align: center;">选择新状态</div>
+                    <div class="status-buttons" style="display: grid; gap: 8px;">
+                        ${availableStatuses.map(status => `
+                            <button class="status-option-btn ${status === currentStatus ? 'current' : ''}" 
+                                    data-status="${status}"
+                                    style="
+                                        padding: 10px 15px;
+                                        background: ${status === currentStatus ? 
+                                            'linear-gradient(135deg, rgba(79, 195, 247, 0.3), rgba(128, 222, 234, 0.3))' : 
+                                            'rgba(255, 255, 255, 0.1)'};
+                                        border: 1px solid ${status === currentStatus ? 
+                                            'rgba(79, 195, 247, 0.5)' : 
+                                            'rgba(255, 255, 255, 0.2)'};
+                                        border-radius: 8px;
+                                        color: ${status === currentStatus ? '#4fc3f7' : '#e3f2fd'};
+                                        cursor: pointer;
+                                        font-size: 0.9rem;
+                                        transition: all 0.3s ease;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        gap: 8px;
+                                    ">
+                                <span class="status-indicator status-${status}" style="
+                                    width: 8px;
+                                    height: 8px;
+                                    border-radius: 50%;
+                                    background: ${getStatusColor(status)};
+                                "></span>
+                                ${statusTexts[status]}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="status-modal-actions" style="
+                    display: flex;
+                    gap: 10px;
+                ">
+                    <button class="confirm-status-btn" style="
+                        flex: 1;
+                        padding: 10px;
+                        background: linear-gradient(135deg, rgba(79, 195, 247, 0.3), rgba(128, 222, 234, 0.3));
+                        border: 1px solid rgba(79, 195, 247, 0.5);
+                        border-radius: 8px;
+                        color: #4fc3f7;
+                        cursor: pointer;
+                        font-size: 0.9rem;
+                        font-weight: bold;
+                        transition: all 0.3s ease;
+                    " disabled>
+                        <i class="fas fa-check"></i> 确认更新
+                    </button>
+                    <button class="close-status-modal" style="
+                        flex: 1;
+                        padding: 10px;
+                        background: rgba(255, 255, 255, 0.1);
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        border-radius: 8px;
+                        color: #b3e5fc;
+                        cursor: pointer;
+                        font-size: 0.9rem;
+                        transition: all 0.3s ease;
+                    ">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // 添加到页面
+        document.body.appendChild(modal);
+        
+        let selectedStatus = null;
+        
+        // 状态选择事件
+        const statusButtons = modal.querySelectorAll('.status-option-btn');
+        statusButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // 移除其他按钮的选中状态
+                statusButtons.forEach(btn => {
+                    btn.style.background = 'rgba(255, 255, 255, 0.1)';
+                    btn.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+                    btn.style.color = '#e3f2fd';
+                });
+                
+                // 设置当前按钮为选中状态
+                button.style.background = 'linear-gradient(135deg, rgba(79, 195, 247, 0.3), rgba(128, 222, 234, 0.3))';
+                button.style.border = '1px solid rgba(79, 195, 247, 0.5)';
+                button.style.color = '#4fc3f7';
+                
+                selectedStatus = button.dataset.status;
+                
+                // 启用确认按钮
+                const confirmBtn = modal.querySelector('.confirm-status-btn');
+                confirmBtn.disabled = false;
+                confirmBtn.style.background = 'linear-gradient(135deg, #0288d1, #00bcd4)';
+                confirmBtn.style.color = 'white';
+                confirmBtn.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+            });
+        });
+        
+        // 确认更新
+        const confirmBtn = modal.querySelector('.confirm-status-btn');
+        confirmBtn.addEventListener('click', async () => {
+            if (!selectedStatus) return;
+            
+            try {
+                const response = await fetch(`/api/admin/feedback/${feedbackId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ status: selectedStatus })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showToast('success', '更新成功', `反馈状态已更新为「${statusTexts[selectedStatus]}」`);
+                    // 刷新反馈列表
+                    loadFeedbackList();
+                    modal.remove();
+                } else {
+                    throw new Error(data.message || '更新状态失败');
+                }
+            } catch (error) {
+                console.error('更新反馈状态失败:', error);
+                showToast('error', '更新失败', '更新反馈状态时出现错误');
+            }
+        });
+        
+        // 关闭事件
+        const closeButtons = modal.querySelectorAll('.close-status-modal');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modal.remove();
+            });
+        });
+        
+        // 点击背景关闭
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+        
+        // ESC键关闭
+        const handleEscKey = (e) => {
+            if (e.key === 'Escape') {
+                modal.remove();
+                document.removeEventListener('keydown', handleEscKey);
+            }
+        };
+        document.addEventListener('keydown', handleEscKey);
+    }
+
+    // 获取状态颜色
+    function getStatusColor(status) {
+        const colors = {
+            'new': '#ff9800',
+            'in_progress': '#2196f3',
+            'resolved': '#4caf50',
+            'closed': '#9e9e9e'
+        };
+        return colors[status] || '#b3e5fc';
+    }
+
+    // 显示消息
+    function showMessage(text, type) {
+        const message = document.getElementById('message');
+        message.textContent = text;
+        message.className = 'message ' + type;
+        message.style.display = 'block';
+
+        setTimeout(() => {
+            message.style.display = 'none';
+        }, 3000);
+    }
+
+    // 加载当前阅读 
+    function loadCurrentReading(currentReading) {
+        const currentReadingElement = document.getElementById('currentReading');
+
+        if (currentReading && currentReading.length > 0) {
+            currentReadingElement.innerHTML = currentReading.map(book => `
+                <div class="current-reading-item" data-book-id="${book.id}">
+                    <div class="current-reading-status ${book.status === 'reading' ? 'reading' : 'paused'}"></div>
+                    <div class="current-reading-cover">
+                        ${book.cover_image ? 
+                            `<img src="${book.cover_image.startsWith('/') ? book.cover_image : '/photo/' + book.cover_image}" alt="${book.title}">` : 
+                            `<i class="fas fa-book"></i>`
+                        }
+                    </div>
+                    <div class="current-reading-title">${book.title}</div>
+                    <div class="current-reading-author">${book.author || '未知作者'}</div>
+                    <div class="current-reading-progress">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${book.progress || 0}%"></div>
+                        </div>
+                        <div class="current-reading-percent">${book.progress || 0}%</div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            currentReadingElement.innerHTML = `
+                <div class="current-reading-empty">
+                    <i class="fas fa-book-open"></i>
+                    <p>暂无当前阅读的书籍</p>
+                </div>
+            `;
+        }
+    }
+
+    //加载阅读历史
+    function loadReadingHistory(readingHistory) {
+        const readingHistoryElement = document.getElementById('readingHistory');
+        
+        if (readingHistory.length > 0) {
+            readingHistoryElement.innerHTML = readingHistory.map(book => `
+                <div class="book-item" data-book-id="${book.id}">
+                    <div class="book-cover-small">
+                        ${book.cover_image ? 
+                            `<img src="${book.cover_image.startsWith('/') ? book.cover_image : '/photo/' + book.cover_image}" alt="${book.title}" style="width:100%;height:100%;object-fit:cover;">` : 
+                            `<div class="no-cover" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#78909c;color:white;font-size:0.7rem;text-align:center;padding:5px;"><i class="fas fa-book"></i></div>`
+                        }
+                    </div>
+                    <div class="book-title-small">${book.title}</div>
+                    <div class="book-author" style="font-size:0.8rem;color:#b3e5fc;">${book.author}</div>
+                    <div style="font-size:0.7rem;color:#b3e5fc;">
+                        ${book.status === 'completed' ? '已读完' : book.status === 'reading' ? '阅读中' : '已暂停'}
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            readingHistoryElement.innerHTML = '<p style="text-align:center;color:#b3e5fc;grid-column:1/-1;">暂无阅读历史</p>';
+        }
+    }
+
+    //加载我的书架
+    function loadMyBookshelf(myBookshelf) {
+        const myBookshelfElement = document.getElementById('myBookshelf');
+        
+        if (myBookshelf.length > 0) {
+            myBookshelfElement.innerHTML = myBookshelf.map(book => `
+                <div class="book-item" data-book-id="${book.id}">
+                    <div class="book-cover-small">
+                        ${book.cover_image ? 
+                            `<img src="${book.cover_image.startsWith('/') ? book.cover_image : '/photo/' + book.cover_image}" alt="${book.title}" style="width:100%;height:100%;object-fit:cover;">` : 
+                            `<div class="no-cover" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#78909c;color:white;font-size:0.7rem;text-align:center;padding:5px;"><i class="fas fa-book"></i></div>`
+                        }
+                    </div>
+                    <div class="book-title-small">${book.title}</div>
+                    <div class="book-author" style="font-size:0.8rem;color:#b3e5fc;">${book.author}</div>
+                    <div style="font-size:0.7rem;color:#b3e5fc;">
+                        ${book.shelf_type === 'read' ? '已读' : 
+                        book.shelf_type === 'reading' ? '阅读中' : '想读'}
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            myBookshelfElement.innerHTML = '<p style="text-align:center;color:#b3e5fc;grid-column:1/-1;">书架空空如也</p>';
+        }
+    }
+
+    // 删除
+    async function confirmDelete() {
+        try {
+            const { type, bookId, bookTitle, bookElement } = contextMenuData;
+            
+            const response = await fetch('/api/user/remove', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    type: type,
+                    bookId: bookId
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // 从DOM中移除书籍元素
+                if (bookElement) {
+                    bookElement.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(() => {
+                        bookElement.remove();
+                        
+                        // 检查是否还有书籍，如果没有显示空状态
+                        const container = bookElement.parentElement;
+                        if (container.children.length === 0) {
+                            const emptyHtml = `
+                                <div class="no-books" style="text-align:center;color:#b3e5fc;padding:40px;grid-column:1/-1;">
+                                    <i class="fas fa-book-open" style="font-size:2rem;margin-bottom:10px;"></i>
+                                    <p>${getEmptyMessage(type)}</p>
+                                </div>
+                            `;
+                            container.innerHTML = emptyHtml;
+                        }
+                    }, 300);
+                }
+                
+                showToast('success', '删除成功', data.message || `已从${getCollectionName(type)}删除《${bookTitle}》`);
+                
+            } else {
+                showToast('error', '删除失败', data.message || '删除书籍时出现错误');
+            }
+            
+        } catch (error) {
+            console.error('删除失败:', error);
+            showToast('error', '删除失败', '删除书籍时出现错误，请稍后重试');
+        } finally {
+            cancelDelete();
+        }
+    }
+
+    // 右键菜单相关变量
+    let contextMenuData = {
+        type: '', // 'bookshelf', 'history', 'current'
+        bookId: null,
+        bookTitle: '',
+        bookElement: null
+    };
+
+    // 处理右键菜单
+    function handleContextMenu(e) {
+        const bookItem = e.target.closest('.book-item, .current-reading-item');
+        if (bookItem) {
+            e.preventDefault();
+            
+            // 确定书籍类型
+            let type = '';
+            if (bookItem.closest('#readingHistory')) {
+                type = 'history';
+            } else if (bookItem.closest('#myBookshelf')) {
+                type = 'bookshelf';
+            } else if (bookItem.closest('#currentReading')) {
+                type = 'current';
+            }
+            
+            // 获取书籍信息
+            const titleElement = bookItem.querySelector('.book-title-small') || bookItem.querySelector('.current-reading-title');
+            const bookTitle = titleElement ? titleElement.textContent : '未知书籍';
+            const bookId = bookItem.dataset.bookId || Date.now();
+            
+            contextMenuData = {
+                type: type,
+                bookId: bookId,
+                bookTitle: bookTitle,
+                bookElement: bookItem
+            };
+            
+            // 显示右键菜单
+            const contextMenu = document.getElementById('contextMenu');
+            if (contextMenu) {
+                // 先显示菜单
+                contextMenu.style.display = 'block';
+                
+                // 获取鼠标位置
+                let x = e.clientX;
+                let y = e.clientY;
+                
+                // 获取菜单尺寸
+                const menuRect = contextMenu.getBoundingClientRect();
+                const menuWidth = menuRect.width;
+                const menuHeight = menuRect.height;
+                
+                // 获取窗口尺寸
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+                
+                // 调整位置，防止超出窗口边界
+                if (x + menuWidth > windowWidth) {
+                    x = windowWidth - menuWidth - 5;
+                }
+                if (y + menuHeight > windowHeight) {
+                    y = windowHeight - menuHeight - 5;
+                }
+                
+                // 设置菜单位置
+                contextMenu.style.left = x + 'px';
+                contextMenu.style.top = y + 'px';
+                
+                console.log('菜单显示在:', x, y); // 调试信息
+            }
+            
+            document.getElementById('contextMenuDelete').innerHTML = [
+                '<i class="fas fa-trash"></i>',
+                '<span>从' + getCollectionName(type) + '删除</span>'
+            ].join('');
+        }
+    }
+
+    // 关闭右键菜单
+    function handleContextMenuClose(e) {
+        if (!e.target.closest('.context-menu')) {
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+    }
+
+    // 处理删除
+    function handleContextMenuDelete() {
+        const { type, bookId, bookTitle } = contextMenuData;
+        showDeleteConfirmation(type, bookId, bookTitle);
+        document.getElementById('contextMenu').style.display = 'none';
+    }
+
+    // 显示删除确认对话框
+    function showDeleteConfirmation(type, bookId, bookTitle) {
+        currentDeleteData = {
+            type: type,
+            bookId: bookId,
+            bookTitle: bookTitle
+        };
+        
+        const modalText = document.getElementById('deleteModalText');
+        let message = '';
+        
+        switch(type) {
+            case 'bookshelf':
+                message = `您确定要从"我的书架"中删除《${bookTitle}》吗？`;
+                break;
+            case 'history':
+                message = `您确定要从"阅读历史"中删除《${bookTitle}》吗？`;
+                break;
+            case 'current':
+                message = `您确定要从"当前阅读"中删除《${bookTitle}》吗？`;
+                break;
+        }
+        
+        modalText.textContent = message;
+        document.getElementById('deleteModal').classList.add('active');
+    }
+
+    // 取消删除
+    function cancelDelete() {
+        document.getElementById('deleteModal').classList.remove('active');
+        currentDeleteData = {
+            type: '',
+            bookId: null,
+            bookTitle: ''
+        };
+    }
+
+    // 获取集合名称
+    function getCollectionName(type) {
+        const names = {
+            'bookshelf': '我的书架',
+            'history': '阅读历史',
+            'current': '当前阅读'
+        };
+        return names[type] || '集合';
+    }
+
+    // 获取空状态消息
+    function getEmptyMessage(type) {
+        const messages = {
+            'bookshelf': '书架空空如也',
+            'history': '暂无阅读历史',
+            'current': '暂无当前阅读的书籍'
+        };
+        return messages[type] || '暂无数据';
+    }
+
+    // 显示提示消息
+    function showToast(type, title, message) {
+        const toastContainer = document.getElementById('toastContainer');
+        const toastId = 'toast-' + Date.now();
+        
+        const icons = {
+            success: 'fas fa-check-circle',
+            error: 'fas fa-exclamation-circle',
+            info: 'fas fa-info-circle'
+        };
+        
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.id = toastId;
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i class="${icons[type]}"></i>
+            </div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+            <button class="toast-close" onclick="closeToast('${toastId}')">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        setTimeout(() => {
+            closeToast(toastId);
+        }, 5000);
+    }
+
+    // 关闭提示消息
+    function closeToast(toastId) {
+        const toast = document.getElementById(toastId);
+        if (toast) {
+            toast.style.animation = 'slideInRight 0.3s ease reverse';
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }
+    }
+</script>
+
+</html>

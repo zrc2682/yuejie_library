@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阅界图书馆 - 问题反馈</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<style>
+    body {
+        background: linear-gradient(135deg, #1a237e 0%, #006064 100%);
+        color: #f5f5f5;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>阅界图书馆</h1>
+            <h3>在这里，遇见另一个世界。</h3>
+        </header>
+
+        <div class="nav-container">
+            <div class="nav-item">
+                <a href="/">
+                    <i class="fas fa-home"></i>
+                    <span>首页</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="ranking.html">
+                    <i class="fas fa-chart-line"></i>
+                    <span>阅读量排名</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="library.html">
+                    <i class="fas fa-book"></i>
+                    <span>数字资源</span>
+                </a>
+            </div>
+
+            <div class="nav-item active">
+                <a href="problem.html">
+                    <i class="fas fa-question-circle"></i>
+                    <span>问题反馈</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="personality.html">
+                    <i class="fas fa-user"></i>
+                    <span>个人主页</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="feedback-container">
+            <div class="feedback-header">
+                <h2>我们需要您的反馈</h2>
+                <p>您的意见将帮助我们改进服务</p>
+            </div>
+
+            <div class="message" id="message"></div>
+
+            <form class="feedback-form" id="feedbackForm">
+                <div class="form-group">
+                    <label for="name">用户名</label>
+                    <input type="text" id="name" name="name" placeholder="请输入您的用户名">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">邮箱</label>
+                    <input type="email" id="email" name="email" placeholder="请输入您的邮箱">
+                </div>
+
+                <div class="form-group">
+                    <label for="issueType">问题类型</label>
+                    <select id="issueType" name="issueType">
+                        <option value="">请选择问题类型</option>
+                        <option value="technical">技术问题</option>
+                        <option value="content">内容问题</option>
+                        <option value="suggestion">建议反馈</option>
+                        <option value="account">账户问题</option>
+                        <option value="other">其他问题</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">主题</label>
+                    <input type="text" id="subject" name="subject" placeholder="请简要描述问题">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">问题描述</label>
+                    <textarea id="description" name="description" placeholder="请详细描述您遇到的问题或建议..."></textarea>
+                </div>
+
+                <button class="submit-btn" type="submit">
+                    <i class="fas fa-paper-plane"></i> 提交反馈
+                </button>
+            </form>
+
+            <div class="contact-info">
+                <h3>其他联系方式</h3>
+                <p><i class="fas fa-envelope"></i> 邮箱: 1057538673@qq.com</p>
+                <p><i class="fas fa-clock"></i> 服务时间: 周一至周五 9:00-18:00</p>
+                <p>我们会在1-3个工作日内回复您的反馈。紧急问题请直接拨打我们的客服电话。</p>
+                <p><i class="fas fa-phone"></i> 电话: 18846799307</p>
+            </div>
+        </div>
+
+        <div class="quote">
+            "书籍是屹立在时间的汪洋大海中的灯塔。 —— 惠普尔"
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('feedbackForm');
+            const message = document.getElementById('message');
+
+            // 表单提交事件
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const submitBtn = form.querySelector('.submit-btn');
+                const originalText = submitBtn.innerHTML;
+
+                // 显示加载状态
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
+                submitBtn.disabled = true;
+
+                // 隐藏之前的消息
+                message.style.display = 'none';
+
+                // 收集表单数据
+                const formData = {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    issueType: document.getElementById('issueType').value,
+                    subject: document.getElementById('subject').value,
+                    description: document.getElementById('description').value,
+                    timestamp: new Date().toISOString()
+                };
+
+                // 基本验证
+                if (!formData.name || !formData.email || !formData.issueType || !formData.subject || !formData.description) {
+                    showMessage('请填写所有必填字段', 'error');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+
+                // 邮箱验证
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(formData.email)) {
+                    showMessage('邮箱格式不正确', 'error');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    return;
+                }
+
+                try {
+                    // 发送反馈到服务器
+                    const response = await fetch('/api/feedback', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    if (response.ok) {
+                        showMessage('反馈提交成功！感谢您的意见。', 'success');
+                        form.reset();
+                    } else {
+                        showMessage('提交失败，请稍后重试。', 'error');
+                    }
+                } catch (error) {
+                    console.error('提交反馈错误:', error);
+                    showMessage('网络错误，请检查连接后重试。', 'error');
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+
+        });
+
+        // 在页面加载时检查并显示管理员入口
+        async function addAdminEntry() {
+            try {
+                const response = await fetch('/api/whoami');
+                const data = await response.json();
+
+                if (data.success && data.user && data.user.role === 'admin') {
+                    // 在图书馆页面显示上传功能
+                    if (document.getElementById('uploadSection')) {
+                        document.getElementById('uploadSection').style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                console.error('检查管理员权限失败:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async() => {
+            // 检查管理员权限
+            await addAdminEntry();
+        });
+
+        // 显示消息函数
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = 'message ' + type;
+            message.style.display = 'block';
+
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阅界图书馆 - 注册</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style2.css">
+
+</head>
+
+<body>
+    <div class="register-container">
+        <div class="register-header">
+            <h1>阅界图书馆</h1>
+            <p>在这里，遇见另一个世界</p>
+        </div>
+
+        <div class="message" id="message"></div>
+
+        <form class="register-form" method="POST" id="registerform">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" placeholder="请输入您的用户名">
+                <i class="fas fa-user"></i>
+            </div>
+
+            <div class="form-group">
+                <label for="email">邮箱</label>
+                <input type="email" id="email" name="email" placeholder="请输入您的邮箱">
+                <i class="fas fa-envelope"></i>
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" placeholder="请输入您的密码">
+                <i class="fas fa-lock"></i>
+                <!-- 添加密码提示文字 -->
+                <div class="password-hint">
+                    密码需至少8位，包含大小写字母和数字
+                </div>
+                <div class="password-strength" id="passwordStrength"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码验证</label>
+                <input type="password" id="password2" name="password2" placeholder="请再次输入您的密码">
+                <i class="fas fa-check-circle"></i>
+                <div class="password-match" id="passwordMatch"></div>
+            </div>
+
+            <button class="submit-btn" type="submit">注册</button>
+
+            <div class="divider"></div>
+
+            <div class="login-link">
+                <p>已有账户？ <a href="login.html">立即登录 <i class="fas fa-external-link-alt"></i></a></p>
+            </div>
+        </form>
+
+        <div class="quote">
+            "书籍是屹立在时间的汪洋大海中的灯塔。 —— 惠普尔"
+        </div>
+    </div>
+</body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('registerform');
+        const password = document.getElementById('password');
+        const password2 = document.getElementById('password2');
+        const passwordMatch = document.getElementById('passwordMatch');
+        const passwordStrength = document.getElementById('passwordStrength');
+        const message = document.getElementById('message');
+
+        // 密码强度检测
+        function checkPasswordStrength(pwd) {
+            if (pwd.length === 0) {
+                return '';
+            }
+
+            let strength = 0;
+            if (pwd.length >= 8) strength++;
+            if (pwd.match(/([a-z].*[A-Z])|([A-Z].*[a-z])/)) strength++;
+            if (pwd.match(/([0-9])/)) strength++;
+            if (pwd.match(/([!,@,#,$,%,^,&,*,?,_,~])/)) strength++;
+
+            return strength;
+        }
+
+        // 密码匹配验证
+        function validatePassword() {
+            if (password2.value === '') {
+                passwordMatch.className = 'password-match';
+                return false;
+            }
+
+            if (password.value === password2.value) {
+                passwordMatch.textContent = '密码匹配';
+                passwordMatch.className = 'password-match valid';
+                return true;
+            } else {
+                passwordMatch.textContent = '密码不匹配';
+                passwordMatch.className = 'password-match invalid';
+                return false;
+            }
+        }
+
+        // 密码强度显示
+        function updatePasswordStrength() {
+            const strength = checkPasswordStrength(password.value);
+            passwordStrength.className = 'password-strength';
+
+            if (password.value.length === 0) {
+                return;
+            }
+
+            if (strength < 2) {
+                passwordStrength.classList.add('strength-weak');
+            } else if (strength < 4) {
+                passwordStrength.classList.add('strength-medium');
+            } else {
+                passwordStrength.classList.add('strength-strong');
+            }
+        }
+
+        // 输入框交互效果
+        const inputs = form.querySelectorAll('input');
+        inputs.forEach(function(input) {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+
+            input.addEventListener('blur', function() {
+                if (this.value === '') {
+                    this.parentElement.classList.remove('focused');
+                }
+
+                // 如果是密码验证字段，检查匹配
+                if (this.id === 'password2') {
+                    validatePassword();
+                }
+            });
+        });
+
+        // 实时密码匹配检查
+        password2.addEventListener('input', validatePassword);
+
+        // 实时密码强度检查
+        password.addEventListener('input', updatePasswordStrength);
+
+        // 表单提交事件
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // 验证密码是否匹配
+            if (!validatePassword()) {
+                showMessage('密码不匹配，请重新输入', 'error');
+                return;
+            }
+
+            // 检查密码强度
+            const strength = checkPasswordStrength(password.value);
+            if (strength < 2) {
+                showMessage('密码强度不足，请使用至少8位字符，包含大小写字母和数字', 'error');
+                return;
+            }
+
+            const submitBtn = form.querySelector('.submit-btn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 注册中...';
+            submitBtn.disabled = true;
+
+            message.style.display = 'none';
+
+            try {
+
+                // 获取表单数据
+                const formData = {
+                    username: document.getElementById('username').value,
+                    email: document.getElementById('email').value,
+                    password: password.value // 使用加密后的密码
+                };
+
+                // 发送请求到Node.js服务器
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('注册成功！正在跳转到登录页面...', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('注册错误:', error);
+                showMessage('网络错误，请稍后重试', 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // 显示消息函数
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = 'message ' + type;
+            message.style.display = 'block';
+
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 5000);
+        }
+    });
+</script>
+
+</html>

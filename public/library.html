@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>阅界图书馆 - 数字资源</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+
+<body>
+    <div class="container">
+        <header>
+            <h1>阅界图书馆</h1>
+            <h3>在这里，遇见另一个世界。</h3>
+
+            <p class="description">阅界图书馆采用科学的分类体系，帮助您快速找到所需资源。我们的馆藏按照内容、读者年龄和知识体系等多维度进行分类。</p>
+        </header>
+
+        <div class="nav-container">
+            <div class="nav-item active">
+                <a href="/">
+                    <i class="fas fa-home"></i>
+                    <span>首页</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="ranking.html">
+                    <i class="fas fa-chart-line"></i>
+                    <span>阅读量排名</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="library.html">
+                    <i class="fas fa-book"></i>
+                    <span>数字资源</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="problem.html">
+                    <i class="fas fa-question-circle"></i>
+                    <span>问题反馈</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="personality.html">
+                    <i class="fas fa-user"></i>
+                    <span>个人主页</span>
+                </a>
+            </div>
+
+        </div>
+
+        <div class="subcategories">
+            <button class="subcategory">文学小说</button>
+            <button class="subcategory">社会科学</button>
+            <button class="subcategory">自然科学</button>
+            <button class="subcategory">工程技术</button>
+            <button class="subcategory">艺术设计</button>
+            <button class="subcategory">历史地理</button>
+            <button class="subcategory">哲学宗教</button>
+            <button class="subcategory">经济管理</button>
+            <button class="subcategory">幼儿读物</button>
+            <button class="subcategory">儿童文学</button>
+            <button class="subcategory">青少年读物</button>
+            <button class="subcategory">成人读物</button>
+            <button class="subcategory">老年读物</button>
+            <button class="subcategory">中文图书</button>
+            <button class="subcategory">英文原版</button>
+            <button class="subcategory">法语图书</button>
+            <button class="subcategory">日语图书</button>
+            <button class="subcategory">多语种图书</button>
+            <button class="subcategory">古籍文献</button>
+            <button class="subcategory">近代文献</button>
+            <button class="subcategory">现代出版物</button>
+            <button class="subcategory">最新上架</button>
+            <button class="subcategory">地方文献</button>
+            <button class="subcategory">珍本善本</button>
+        </div>
+
+    </div>
+
+    <div class="books-container">
+        <h3 class="section-title">经典图书展示</h3>
+        <div class="books-grid" id="booksGrid">
+        </div>
+    </div>
+
+    <!-- 倒计时触发按钮 -->
+    <div class="countdown-trigger" id="countdownTrigger">
+        <i class="fas fa-clock"></i>
+    </div>
+
+    <!-- 倒计时弹窗 -->
+    <div class="countdown-modal" id="countdownModal">
+        <span class="close-countdown" id="closeCountdown">&times;</span>
+        <div class="countdown-title">阅读倒计时</div>
+        <!-- 添加时间选择器 -->
+        <div class="time-selector">
+            <input type="number" id="minutesInput" min="1" max="120" value="25">
+            <span>分钟</span>
+            <button class="set-time-btn" id="setTimeBtn">设置</button>
+        </div>
+        <div class="countdown-display" id="countdownDisplay">25:00</div>
+        <div class="countdown-controls">
+            <button class="countdown-btn start" id="startCountdown">开始</button>
+            <button class="countdown-btn pause" id="pauseCountdown">暂停</button>
+            <button class="countdown-btn reset" id="resetCountdown">重置</button>
+        </div>
+    </div>
+
+
+    <script>
+        // 从API获取图书数据
+        async function fetchBooks(category = null) {
+            try {
+                const url = category ? `/api/books/category/${encodeURIComponent(category)}` : '/api/books';
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const books = await response.json();
+                return books;
+            } catch (error) {
+                console.error('获取图书数据失败:', error);
+            }
+        }
+
+        // 显示图书的函数
+        function displayBooks(books) {
+            const booksGrid = document.getElementById('booksGrid');
+            booksGrid.innerHTML = '';
+
+            if (!books || books.length === 0) {
+                booksGrid.innerHTML = '<div class="no-books">暂无该分类的图书</div>';
+                return;
+            }
+
+            books.forEach(book => {
+                        const bookCard = document.createElement('div');
+                        bookCard.className = 'book-card';
+                        bookCard.addEventListener('click', () => {
+                            openBookReading(book);
+                        });
+
+                        // 使用数据库中的图片路径，确保路径正确
+                        let coverHtml;
+                        if (book.cover_image) {
+                            const imagePath = book.cover_image.startsWith('/') ?
+                                book.cover_image : `/photo/${book.cover_image}`;
+                            coverHtml = `<img src="${imagePath}" alt="${book.title}封面" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
+                        } else {
+                            coverHtml = '';
+                        }
+
+                        // 解析分类
+                        let categories = [];
+                        try {
+                            categories = typeof book.categories === 'string' ?
+                                JSON.parse(book.categories) :
+                                (book.categories || []);
+                        } catch (e) {
+                            console.error('解析分类错误:', e);
+                            categories = ['未分类'];
+                        }
+
+                        bookCard.innerHTML = `
+                <div class="book-cover">
+                    ${coverHtml}
+                    <div class="no-cover" style="${book.cover_image ? 'display: none;' : ''}">
+                        <i class="fas fa-book"></i>
+                        <span>${book.title}</span>
+                    </div>
+                </div>
+                <div class="book-info">
+                    <div class="book-title">${book.title}</div>
+                    <div class="book-author">作者: ${book.author || '未知'}</div>
+                    <div class="book-categories">
+                        ${categories.map(cat => 
+                            `<span class="book-category">${cat}</span>`
+                        ).join('')}
+                    </div>
+                    <div class="book-read-link">
+                        <i class="fas fa-external-link-alt"></i>
+                        点击阅读
+                    </div>
+                </div>
+            `;
+            
+            booksGrid.appendChild(bookCard);
+        });
+    }
+
+        // 打开书籍阅读页面的函数
+    function openBookReading(book) {
+            // 显示阅读选项弹窗
+            showReadingOptions(book);
+        }
+
+    function closeReadingModal() {
+        const modal = document.querySelector('.reading-modal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
+    function closeReadingTipsModal() {
+        const tipModal = document.querySelector('.reading-tips-modal');
+        if (tipModal) {
+            tipModal.remove();
+        }
+    }
+
+    // 显示阅读选项弹窗
+    function showReadingOptions(book) {
+        const modal = document.createElement('div');
+        modal.className = 'reading-modal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1003;
+            backdrop-filter: blur(5px);
+        `;
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'reading-modal-content';
+        modalContent.style.cssText = `
+            background: rgba(30, 40, 60, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        `;
+
+        // 安全地处理书名和作者名
+        const safeTitle = book.title || '未知书名';
+        const safeAuthor = book.author || '未知作者';
+
+        modalContent.innerHTML = `
+            <div class="reading-modal-header" style="margin-bottom: 20px;">
+                <h3 style="color: #4fc3f7; margin: 0 0 10px 0;">阅读《${safeTitle}》</h3>
+                <p style="color: #b3e5fc; margin: 0;">作者: ${safeAuthor}</p>
+            </div>
+            
+            <div class="reading-disclaimer" style="background: rgba(255,193,7,0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                <p style="color: #ffd54f; margin: 0; font-size: 0.9rem;">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>版权声明：</strong>我们通过豆瓣读书提供书籍信息搜索。
+                </p>
+            </div>
+            
+            <div class="reading-options" style="margin: 25px 0;">
+                <div class="reading-option" style="background: rgba(41, 98, 255, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 15px; cursor: pointer; transition: all 0.3s ease;" 
+                    onclick="startOnlineReading(${book.id}, '${safeTitle}', '${safeAuthor}')">
+                    <h4 style="color: #4fc3f7; margin: 0 0 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-globe"></i> 搜索书籍信息
+                    </h4>
+                    <p style="color: #b3e5fc; margin: 0; font-size: 0.9rem;">
+                        在豆瓣读书上搜索书籍详细信息、评分和评论
+                    </p>
+                </div>
+                
+                <div class="reading-option" style="background: rgba(41, 98, 255, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 15px; cursor: pointer; transition: all 0.3s ease;" 
+                    onclick="searchInLibraries('${safeTitle}', '${safeAuthor}')">
+                    <h4 style="color: #4fc3f7; margin: 0 0 8px 0; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-shopping-cart"></i> 购买实体书
+                    </h4>
+                    <p style="color: #b3e5fc; margin: 0; font-size: 0.9rem;">
+                        在百度搜索实体书购买渠道
+                    </p>
+                </div>
+            </div>
+            
+            <div class="modal-actions" style="display: flex; gap: 10px;">
+                <button class="btn" onclick="closeReadingModal()" style="flex: 1; padding: 12px; background: rgba(255, 255, 255, 0.1); color: #b3e5fc; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;">取消</button>
+            </div>
+        `;
+
+        // 添加悬停效果
+        const options = modalContent.querySelectorAll('.reading-option');
+        options.forEach(option => {
+            option.addEventListener('mouseenter', () => {
+                option.style.background = 'rgba(41, 98, 255, 0.2)';
+                option.style.transform = 'translateY(-2px)';
+            });
+            option.addEventListener('mouseleave', () => {
+                option.style.background = 'rgba(41, 98, 255, 0.1)';
+                option.style.transform = 'translateY(0)';
+            });
+        });
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+
+        // 点击外部关闭
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // 开始在线阅读
+    async function startOnlineReading(bookId, title, author) {
+        try {
+            // 开始阅读会话
+            const response = await fetch('/api/reading/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ bookId })
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                // 使用中文豆瓣链接
+                const doubanUrl = `https://search.douban.com/book/subject_search?search_text=${title}`;
+                
+                // 在新窗口打开
+                window.open(doubanUrl, '_blank');
+                
+                // 显示阅读提示
+                showReadingTips(bookId, title);
+                
+                // 关闭选择弹窗 
+                const readingModal = document.querySelector('.reading-modal');
+                if (readingModal) {
+                    readingModal.remove();
+                }
+            } else {
+                alert('开始阅读失败，请重试');
+            }
+        } catch (error) {
+            console.error('开始阅读失败:', error);
+            alert('开始阅读失败，请检查网络连接');
+        }
+    }
+
+    // 显示阅读提示
+    function showReadingTips(bookId, title) {
+        const tipModal = document.createElement('div');
+        tipModal.className = 'reading-tips-modal';
+        tipModal.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 40, 60, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(79, 195, 247, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 1004;
+            max-width: 300px;
+            animation: slideInRight 0.3s ease-out;
+        `;
+
+        tipModal.innerHTML = `
+            <h4 style="color: #4fc3f7; margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-book-reader"></i> 正在搜索《${title}》
+            </h4>
+            <p style="color: #b3e5fc; margin: 0 0 15px 0; font-size: 0.9rem;">
+                已在新窗口打开豆瓣搜索页面
+            </p>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="markAsCompleted(${bookId})" style="flex: 1; padding: 8px; background: linear-gradient(45deg, #0288d1, #00bcd4); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">
+                    标记完成
+                </button>
+                <button onclick="closeReadingTipsModal()" style="padding: 8px 12px; background: rgba(255, 255, 255, 0.1); color: #b3e5fc; border: none; border-radius: 6px; cursor: pointer;">
+                    ×
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(tipModal);
+
+        // 5秒后自动隐藏
+        setTimeout(() => {
+            if (tipModal.parentElement) {
+                tipModal.style.opacity = '0';
+                tipModal.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    if (tipModal.parentElement) {
+                        tipModal.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+
+    // 标记阅读完成
+    async function markAsCompleted(bookId) {
+        try {
+            const response = await fetch('/api/reading/complete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ bookId })
+            });
+
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('阅读已完成！阅读数据已记录。');
+                // 移除提示框
+                const tipModal = document.querySelector('.reading-tips-modal');
+                if (tipModal) {
+                    tipModal.remove();
+                }
+            } else {
+                alert('标记完成失败');
+            }
+        } catch (error) {
+            console.error('标记完成失败:', error);
+            alert('标记完成失败');
+        }
+    }
+
+    // 查找实体书
+    function searchInLibraries(title, author) {
+        const searchQuery = encodeURIComponent(`${title} ${author}`);
+        const worldcatUrl = `https://www.baidu.com/s?wd=${searchQuery}`;
+        window.open(worldcatUrl, '_blank');
+        
+        // 关闭弹窗
+        const readingModal = document.querySelector('.reading-modal');
+        if (readingModal) {
+            readingModal.remove();
+        }
+    }
+
+    // 分类筛选功能
+    let activeCategory = null;
+
+    document.querySelectorAll('.subcategory').forEach(button => {
+        button.addEventListener('click', async () => {
+            const category = button.textContent;
+            
+            // 切换active状态
+            document.querySelectorAll('.subcategory').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            if (activeCategory === category) {
+                // 如果点击的是已选中的分类，则显示所有图书
+                activeCategory = null;
+                const books = await fetchBooks();
+                displayBooks(books);
+            } else {
+                // 否则，显示该分类的图书
+                activeCategory = category;
+                button.classList.add('active');
+                const books = await fetchBooks(category);
+                displayBooks(books);
+            }
+        });
+    });
+
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', async () => {
+        // 获取并显示所有图书
+        const books = await fetchBooks();
+        displayBooks(books);
+    });
+
+    // 倒计时功能代码
+    const countdownTrigger = document.getElementById('countdownTrigger');
+    const countdownModal = document.getElementById('countdownModal');
+    const closeCountdown = document.getElementById('closeCountdown');
+    const countdownDisplay = document.getElementById('countdownDisplay');
+    const startCountdown = document.getElementById('startCountdown');
+    const pauseCountdown = document.getElementById('pauseCountdown');
+    const resetCountdown = document.getElementById('resetCountdown');
+    const minutesInput = document.getElementById('minutesInput');
+    const setTimeBtn = document.getElementById('setTimeBtn');
+
+    let countdownTime = 25 * 60; // 25分钟，以秒为单位
+    let countdownInterval = null;
+    let isPaused = true;
+
+    // 显示倒计时弹窗
+    countdownTrigger.addEventListener('click', () => {
+        countdownModal.classList.add('active');
+    });
+
+    // 关闭倒计时弹窗
+    closeCountdown.addEventListener('click', () => {
+        countdownModal.classList.remove('active');
+        resetTimer();
+    });
+
+    // 设置自定义时间
+    setTimeBtn.addEventListener('click', () => {
+        const minutes = parseInt(minutesInput.value) || 25;
+        if (minutes > 0 && minutes <= 120) {
+            countdownTime = minutes * 60;
+            updateDisplay();
+            alert(`已设置倒计时为 ${minutes} 分钟`);
+        } else {
+            alert('请输入1-120之间的有效分钟数');
+        }
+    });
+
+    // 开始倒计时
+    startCountdown.addEventListener('click', () => {
+        if (isPaused) {
+            isPaused = false;
+            startCountdown.textContent = "开始";
+            startCountdown.disabled = true;
+            pauseCountdown.disabled = false;
+            
+            countdownInterval = setInterval(() => {
+                if (countdownTime > 0) {
+                    countdownTime--;
+                    updateDisplay();
+                } else {
+                    clearInterval(countdownInterval);
+                    // 倒计时结束提示
+                    alert('阅读时间到！休息一下吧！');
+                    resetTimer();
+                }
+            }, 1000);
+        }
+    });
+
+    // 暂停倒计时
+    pauseCountdown.addEventListener('click', () => {
+        if (!isPaused) {
+            isPaused = true;
+            clearInterval(countdownInterval);
+            startCountdown.textContent = "继续";
+            startCountdown.disabled = false;
+        }
+    });
+
+    // 重置倒计时
+    resetCountdown.addEventListener('click', resetTimer);
+
+    // 重置计时器函数
+    function resetTimer() {
+        clearInterval(countdownInterval);
+        // 重置为输入的值或默认25分钟
+        const minutes = parseInt(minutesInput.value) || 25;
+        countdownTime = minutes * 60;
+        isPaused = true;
+        updateDisplay();
+        startCountdown.textContent = "开始";
+        startCountdown.disabled = false;
+        pauseCountdown.disabled = false;
+    }
+
+    // 更新显示时间
+    function updateDisplay() {
+        const minutes = Math.floor(countdownTime / 60);
+        const seconds = countdownTime % 60;
+        countdownDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // 初始化显示
+    updateDisplay();
+    </script>
+</body>
+
+</html>

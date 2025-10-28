@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阅界图书馆 - 登录</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style2.css">
+
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>阅界图书馆</h1>
+            <p>在这里，遇见另一个世界</p>
+        </div>
+
+
+        <div class="message" id="message"></div>
+
+        <form class="login-form" method="post" id="loginform">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" placeholder="请输入您的用户名">
+                <i class="fas fa-user"></i>
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" placeholder="请输入您的密码">
+                <i class="fas fa-lock"></i>
+            </div>
+
+            <button class="submit-btn" type="submit">登录</button>
+
+            <div class="divider"></div>
+
+            <div class="register-link">
+                <p>还没有账户？ <a href="register.html">立即注册 <i class="fas fa-external-link-alt"></i></a></p>
+            </div>
+
+            <div class="register-link">
+                <p>点击返回<a href="index.html">首页 <i class="fas fa-external-link-alt"></i></a></p>
+            </div>
+
+        </form>
+
+        <div class="quote">
+            "书籍是屹立在时间的汪洋大海中的灯塔。 —— 惠普尔"
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('loginform');
+            const message = document.getElementById('message');
+
+            // 输入框交互效果
+            const inputs = form.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+
+                input.addEventListener('blur', function() {
+                    if (this.value === '') {
+                        this.parentElement.classList.remove('focused');
+                    }
+                });
+            });
+
+            // 表单提交事件
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const submitBtn = document.querySelector('.submit-btn');
+                const originalText = submitBtn.textContent;
+
+                // 显示加载状态
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
+                submitBtn.disabled = true;
+
+                // 隐藏之前的消息
+                message.style.display = 'none';
+
+                try {
+                    // 发送登录请求到Node.js服务器
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            password: password
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage('登录成功！正在跳转...', 'success');
+
+                        // 跳转
+                        setTimeout(() => {
+                            window.location.href = 'library.html';
+                        }, 1500);
+                    } else {
+                        showMessage(data.message || '用户名或密码错误', 'error');
+                    }
+                } catch (error) {
+                    console.error('登录错误:', error);
+                    showMessage('网络错误，请稍后重试', 'error');
+
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+
+            // 显示消息函数
+            function showMessage(text, type) {
+                message.textContent = text;
+                message.className = 'message ' + type;
+                message.style.display = 'block';
+
+                setTimeout(() => {
+                    message.style.display = 'none';
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+
+</html>

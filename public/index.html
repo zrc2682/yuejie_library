@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>阅界图书馆 - 在这里，遇见另一个世界</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>阅界图书馆</h1>
+            <h3>在这里，遇见另一个世界。</h3>
+        </header>
+
+        <div class="nav-container">
+            <div class="nav-item active">
+                <a href="/">
+                    <i class="fas fa-home"></i>
+                    <span>首页</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="ranking.html">
+                    <i class="fas fa-chart-line"></i>
+                    <span>阅读量排名</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="library.html">
+                    <i class="fas fa-book"></i>
+                    <span>数字资源</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="problem.html">
+                    <i class="fas fa-question-circle"></i>
+                    <span>问题反馈</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a href="personality.html">
+                    <i class="fas fa-user"></i>
+                    <span>个人主页</span>
+                </a>
+            </div>
+
+
+        </div>
+
+        <button class="login-btn" onclick="window.location.href='login.html'">
+            <i class="fas fa-sign-in-alt"></i>
+            登录 / 注册
+        </button>
+
+        <div class="quote">
+            "书籍是屹立在时间的汪洋大海中的灯塔。 —— 惠普尔"
+        </div>
+
+
+    </div>
+
+    <script>
+        // 添加导航项点击效果
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelector('.nav-item.active').classList.remove('active');
+                this.classList.add('active');
+            });
+        });
+
+        // 检查是否登录
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch('/api/whoami');
+                const data = await response.json();
+
+                if (data.success && data.user) {
+                    // 用户已登录，可以更新UI显示用户信息
+                    console.log('用户已登录:', data.user.username);
+                    const loginBtn = document.querySelector('.login-btn');
+                    loginBtn.innerHTML = `<i class="fas fa-user"></i>欢迎，${data.user.username}`;
+                    loginBtn.onclick = function() {
+                        window.location.href = 'personality.html';
+                    };
+                } else {
+                    // 用户未登录，保持当前状态
+                    console.log('用户未登录');
+                }
+            } catch (error) {
+                console.error('检查登录状态失败:', error);
+            }
+        }
+
+        // 页面加载时检查登录状态
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+        });
+    </script>
+</body>
+
+</html>
