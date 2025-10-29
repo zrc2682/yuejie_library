@@ -125,6 +125,34 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+        });
+
+        // 检查是否登录
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch('/api/whoami');
+                const data = await response.json();
+
+                if (data.success && data.user) {
+                    currentUser = data.user;
+                    feedBack();
+                } else {
+                    showMessage('请登录后进行反馈', 'error');
+                    document.getElementById('feedbackForm').innerHTML = `
+                <div class="no-data">
+                    <i class="fas fa-exclamation-triangle"></i><br>
+                    请先登录以反馈问题
+                </div>
+            `;
+                }
+            } catch (error) {
+                console.error('检查登录状态失败:', error);
+                showMessage('网络错误，请稍后重试', 'error');
+            }
+        }
+
+        function feedBack() {
             const form = document.getElementById('feedbackForm');
             const message = document.getElementById('message');
 
@@ -193,30 +221,8 @@
                     submitBtn.disabled = false;
                 }
             });
-
-        });
-
-        // 在页面加载时检查并显示管理员入口
-        async function addAdminEntry() {
-            try {
-                const response = await fetch('/api/whoami');
-                const data = await response.json();
-
-                if (data.success && data.user && data.user.role === 'admin') {
-                    // 在图书馆页面显示上传功能
-                    if (document.getElementById('uploadSection')) {
-                        document.getElementById('uploadSection').style.display = 'block';
-                    }
-                }
-            } catch (error) {
-                console.error('检查管理员权限失败:', error);
-            }
         }
 
-        document.addEventListener('DOMContentLoaded', async() => {
-            // 检查管理员权限
-            await addAdminEntry();
-        });
 
         // 显示消息函数
         function showMessage(text, type) {
